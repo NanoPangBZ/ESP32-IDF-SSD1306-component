@@ -4,12 +4,11 @@
 #include "driver\gpio.h"
 #include "driver\spi_master.h"
 #include "oled12864.h"
-#include "esp_timer.h"
 #include "stdlib.h"
 #include "string.h"
+#include "esp_timer.h"
 
 static spi_device_handle_t  spi_handle;     //spi操作句柄
-
 
 void OLED12864_GPIO_Init(void)
 {
@@ -20,7 +19,6 @@ void OLED12864_GPIO_Init(void)
 }
 
 void IRAM_ATTR OLED12864_SPI_Finnish_CallBack(spi_transaction_t *para){
-    free((void*)para);
 }
 
 void IRAM_ATTR OLED12864_SPI_Start_CallBack(spi_transaction_t *para){
@@ -64,19 +62,17 @@ void OLED12864_Reset_Bit(int pin_Num){
 
 void OLED12864_Send_NumByte(const uint8_t*dat,uint16_t len,uint8_t cmd)
 {
-    spi_transaction_t *tran = (spi_transaction_t*)malloc(sizeof(spi_transaction_t));
-    tran->tx_buffer = dat;
-    tran->length = len*8;
-    tran->rxlength = tran->length;
-    tran->flags = SPI_TRANS_MODE_OCT;
-    //数据在oled12864.c中是一个静态的局部变量
-    //命令随机生成,得另外开辟内存用于存储命令 -> 在完成回调函数中释放
+    static spi_transaction_t tran;
+    tran.tx_buffer = dat;
+    tran.length = len*8;
+    tran.rxlength = tran.length;
+    tran.flags = SPI_TRANS_MODE_OCT;
     if(cmd==OLED_CMD){
-        tran->user = (void*)OLED_CMD;
+        tran.user = (void*)OLED_CMD;
     }else{
-        tran->user = (void*)OLED_DATA;
+        tran.user = (void*)OLED_DATA;
     }
-    spi_device_queue_trans(spi_handle,tran, 20 / portTICK_PERIOD_MS );
+    spi_device_queue_trans(spi_handle,&tran, portMAX_DELAY );
 }
 
 void OLED12864_delay_ms(uint16_t ms){
@@ -88,13 +84,13 @@ static esp_timer_create_args_t para;
 
 void OLED12864_Auto_Callback(void*args){
     OLED12864_Refresh();
-    //esp_timer_start_once(timer, *(int*)args);
 }
 
-void OLED12864_Auto_Refresh(float hz){
+void OLED12864_Auto_Refresh_Set(int hz,uint8_t *buf){
+    para.arg = (void*)buf;
     para.callback = OLED12864_Auto_Callback;
     para.dispatch_method = ESP_TIMER_TASK;
     esp_timer_init();
     esp_timer_create(&para,&timer);
-    esp_timer_start_once(timer, 1000/hz);
+    esp_timer_start_periodic(timer, (int)1000000/hz);
 }

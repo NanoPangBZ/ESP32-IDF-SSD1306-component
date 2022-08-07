@@ -26,7 +26,7 @@ void OLED12864_Set_Bit(int pin_Num);
 void OLED12864_Reset_Bit(int pin_Num);
 void OLED12864_Send_NumByte(const uint8_t*dat,uint16_t len,uint8_t cmd);
 void OLED12864_delay_ms(uint16_t ms);
-void OLED12864_Auto_Refresh(float hz);
+void OLED12864_Auto_Refresh_Set(int hz,uint8_t *buf);
 
 #endif  //_oled12864_hel_h
 

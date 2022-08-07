@@ -38,6 +38,7 @@ void OLED12864_Set_Position(uint8_t page,uint8_t x);
 void OLED12864_Clear_Sbuffer(void);   
 void OLED12864_Clear(void);
 void OLED12864_Refresh(void);
+void OLED12864_Auto_Refresh(int hz);
 
 //y坐标位置和高度都以page为单位的图形操作
 void OLED12864_Clear_PageBlock(uint8_t page,uint8_t x,uint8_t len);

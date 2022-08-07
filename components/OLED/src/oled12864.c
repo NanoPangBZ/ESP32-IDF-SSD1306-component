@@ -28,7 +28,10 @@ void OLED12864_Init(void)
     OLED12864_Hard_Reset();
     OLED12864_Set_Position(0,0);
     OLED12864_delay_ms(100);
-    OLED12864_Auto_Refresh(200);
+}
+
+void OLED12864_Auto_Refresh(int hz){
+    OLED12864_Auto_Refresh_Set(hz,OLED12864_Sbuffer[0]);
 }
 
 void OLED12864_Hard_Reset(void)
