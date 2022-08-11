@@ -5,7 +5,7 @@
     "interface/ftdi/esp32_devkitj_v1.cfg",
     "target/esp32.cfg"
   ],
-  "idf.portWin": "COM16",
+  "idf.portWin": "COM11",
   "idf.flashType": "UART",
   "files.associations": {
     "oled12864.h": "c",

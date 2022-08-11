@@ -40,23 +40,26 @@ void OLED12864_Clear(void);
 void OLED12864_Refresh(void);
 void OLED12864_Auto_Refresh(int hz);
 
-//y坐标位置和高度都以page为单位的图形操作
 void OLED12864_Clear_PageBlock(uint8_t page,uint8_t x,uint8_t len);
 void OLED12864_Clear_Page(uint8_t page);
+
+#if USE_POINT_CRT == 1
+void OLED12864_Show_Char(uint8_t x,uint8_t y,uint8_t chr,uint8_t size);
+void OLED12864_Show_String(uint8_t x,uint8_t y,uint8_t*str,uint8_t size);
+uint8_t OLED12864_Show_Num(uint8_t x,uint8_t y,int num,uint8_t size);    //返回num的长度
+uint8_t OLED12864_Show_fNum(uint8_t x,uint8_t y,double num,uint8_t size,uint8_t d_len);
+void OLED12864_Draw_Point(uint8_t x,uint8_t y,uint8_t bit);             //<--像素点操作底层函数
+void OLED12864_Draw_Line(uint8_t x1,uint8_t y1,uint8_t x2,uint8_t y2);
+void OLED12864_Draw_Rect(uint8_t x,uint8_t y,uint8_t len,uint8_t hight);
+//*img 以字节竖直,高位在上,数据水平
+void OLED12864_Draw_Img(uint8_t x,uint8_t y,uint8_t len,uint8_t hight,uint8_t*img);
+void OLED12864_Draw_aImg(uint8_t x,uint8_t y,uint8_t*img);  //自带图形大小识别
+#else
 void OLED12864_Show_Char(uint8_t page,uint8_t x,uint8_t chr,uint8_t size);
 void OLED12864_Show_String(uint8_t page,uint8_t x,uint8_t*str,uint8_t size);
 uint8_t OLED12864_Show_Num(uint8_t page,uint8_t x,int num,uint8_t size);    //返回num的长度
 uint8_t OLED12864_Show_fNum(uint8_t page,uint8_t x,double num,uint8_t size,uint8_t d_len);
-
-    //以单个像素点为单位的图形操作
-    #if USE_POINT_CRT == 1
-    void OLED12864_Draw_Point(uint8_t x,uint8_t y,uint8_t bit);             //<--像素点操作底层函数
-    void OLED12864_Draw_Line(uint8_t x1,uint8_t y1,uint8_t x2,uint8_t y2);
-    void OLED12864_Draw_Rect(uint8_t x,uint8_t y,uint8_t len,uint8_t hight);
-    //*img 以字节竖直,高位在上,数据水平
-    void OLED12864_Draw_Img(uint8_t x,uint8_t y,uint8_t len,uint8_t hight,uint8_t*img);
-    void OLED12864_Draw_aImg(uint8_t x,uint8_t y,uint8_t*img);  //自带图形大小识别
-    #endif  //USE_POINT_CRT
+#endif
 
 #ifdef __cplusplus
 }

@@ -91,86 +91,6 @@ void OLED12864_Clear_Page(uint8_t page)
     OLED12864_Clear_PageBlock(page,0,127);
 }
 
-void OLED12864_Show_Char(uint8_t page,uint8_t x,uint8_t chr,uint8_t size)
-{
-    switch(size)
-    {
-        case 1:
-            for(uint8_t temp=0;temp<6;temp++)
-                OLED12864_Sbuffer[page][x+temp] = assic_0806[chr-0x20][temp];
-            break;
-        case 2:
-            //从左至右,从上至下
-            for(uint8_t s_page = 0;s_page<2;s_page++)
-            {
-                for(uint8_t s_x = 0; s_x<8;s_x++)
-                {
-                    OLED12864_Sbuffer[s_page+page][x+s_x] = assic_1608[chr-0x20][s_page*8+s_x];
-                }
-            }
-            break;
-        default:break;
-    }
-}
-
-uint8_t  OLED12864_Show_Num(uint8_t page,uint8_t x,int num,uint8_t size)
-{
-    uint8_t sbuf[8];
-    sprintf((char*)sbuf,"%d",num);
-    OLED12864_Show_String(page,x,sbuf,size);
-    return 0;
-}
-
-uint8_t OLED12864_Show_fNum(uint8_t page,uint8_t x,double num,uint8_t size,uint8_t d_len)
-{
-    int L_Num;              //整数部分
-    double R_Num;           //小数部分
-    int R_Num2;             //根据小数部分化整
-    uint8_t L_len = 0;      //整数部分长度
-    if(d_len==0)
-        d_len = 1;
-    L_Num = (int)num;
-    R_Num = num - L_Num;
-    if(R_Num<0)
-        R_Num = -R_Num;
-    L_len = OLED12864_Show_Num(page,x,L_Num,size);
-    switch(size)
-    {
-        case 1: x += 6*(L_len+1); OLED12864_Show_Char(page,x,'.',size); x+=6; break;
-        case 2: x += 8*(L_len+1); OLED12864_Show_Char(page,x,'.',size); x+=8; break;
-        default:break;
-    }
-    while(d_len!=0)
-    {
-        R_Num*=10;
-        d_len--;
-    }
-    R_Num2 = (int)R_Num;
-    OLED12864_Show_Num(page,x,R_Num2,size);
-    return L_len+1+d_len;
-}
-
-void OLED12864_Show_String(uint8_t page,uint8_t x,uint8_t*str,uint8_t size)
-{
-    uint8_t sx = 0;
-    while(*str!='\0')
-    {
-        OLED12864_Show_Char(page,x+sx,*str,size);
-        switch(size)
-        {
-            case 1:
-                sx+=6;
-                break;
-            case 2:
-                sx+=8;
-                break;
-            default:
-                break;
-        }
-        str++;
-    }
-}
-
 //像素点相关操作
 #if USE_POINT_CRT == 1
 
@@ -220,6 +140,70 @@ void OLED12864_Draw_Rect(uint8_t x,uint8_t y,uint8_t len,uint8_t hight)
     }
 }
 
+void OLED12864_Show_Char(uint8_t x,uint8_t y,uint8_t chr,uint8_t size){
+    uint8_t page1,page2,page3,offset;
+    switch (size)
+    {
+    case 1:
+        page1 = y/8;
+        page2 = page1+1;
+        offset = y%8;
+        for(uint8_t sx=0;sx<6;sx++){
+            OLED12864_Sbuffer[page1][x+sx] &= (0xff<<offset);
+            OLED12864_Sbuffer[page1][x+sx] |=  assic_0806[chr-0x20][sx] << offset;
+            OLED12864_Sbuffer[page2][x+sx] &= (0xff>>offset);
+            OLED12864_Sbuffer[page2][x+sx] |=  assic_0806[chr-0x20][sx] >> offset;
+        }
+        break;
+    case 2:
+        page1 = y/8;
+        page2 = page1+1;
+        page3 = page2+1;
+        offset = page1%8;
+        for(uint8_t sx=0;sx<8;sx++){
+            OLED12864_Sbuffer[page1][x+sx] &= (0xff<<offset);
+            OLED12864_Sbuffer[page1][x+sx] |=  assic_1608[chr-0x20][sx] << offset;
+            OLED12864_Sbuffer[page2][x+sx] &= 0xff;
+            OLED12864_Sbuffer[page2][x+sx] |=  assic_1608[chr-0x20][sx] >> offset;
+            OLED12864_Sbuffer[page2][x+sx] |=  assic_1608[chr-0x20][sx+8] << offset;
+            OLED12864_Sbuffer[page3][x+sx] &= (0xff>>offset);
+            OLED12864_Sbuffer[page3][x+sx] |=  assic_1608[chr-0x20][sx+8] >> offset;
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+void OLED12864_Show_String(uint8_t x,uint8_t y,uint8_t*str,uint8_t size)
+{
+    uint8_t sx = 0;
+    while(*str!='\0')
+    {
+        OLED12864_Show_Char(sx,y,*str,size);
+        switch(size)
+        {
+            case 1:
+                sx+=6;
+                break;
+            case 2:
+                sx+=8;
+                break;
+            default:
+                break;
+        }
+        str++;
+    }
+}
+
+uint8_t OLED12864_Show_Num(uint8_t x,uint8_t y,int num,uint8_t size)
+{
+    return 0;
+}
+uint8_t OLED12864_Show_fNum(uint8_t x,uint8_t y,double num,uint8_t size,uint8_t d_len){
+    return 0;
+}
+
 void OLED12864_Draw_Img(uint8_t x,uint8_t y,uint8_t len,uint8_t hight,uint8_t*img)
 {
     uint8_t sx,sy;
@@ -259,4 +243,86 @@ void OLED12864_Draw_aImg(uint8_t x,uint8_t y,uint8_t*img)
     }
 }
 
-#endif  //USE_POINT_CRT
+#else
+
+void OLED12864_Show_Char(uint8_t page,uint8_t x,uint8_t chr,uint8_t size)
+{
+    switch(size)
+    {
+        case 1:
+            for(uint8_t temp=0;temp<6;temp++)
+                OLED12864_Sbuffer[page][x+temp] = assic_0806[chr-0x20][temp];
+            break;
+        case 2:
+            //从左至右,从上至下
+            for(uint8_t s_page = 0;s_page<2;s_page++)
+            {
+                for(uint8_t s_x = 0; s_x<8;s_x++)
+                {
+                    OLED12864_Sbuffer[s_page+page][x+s_x] = assic_1608[chr-0x20][s_page*8+s_x];
+                }
+            }
+            break;
+        default:break;
+    }
+}
+
+void OLED12864_Show_String(uint8_t page,uint8_t x,uint8_t*str,uint8_t size)
+{
+    uint8_t sx = 0;
+    while(*str!='\0')
+    {
+        OLED12864_Show_Char(page,x+sx,*str,size);
+        switch(size)
+        {
+            case 1:
+                sx+=6;
+                break;
+            case 2:
+                sx+=8;
+                break;
+            default:
+                break;
+        }
+        str++;
+    }
+}
+
+uint8_t OLED12864_Show_fNum(uint8_t page,uint8_t x,double num,uint8_t size,uint8_t d_len)
+{
+    int L_Num;              //整数部分
+    double R_Num;           //小数部分
+    int R_Num2;             //根据小数部分化整
+    uint8_t L_len = 0;      //整数部分长度
+    if(d_len==0)
+        d_len = 1;
+    L_Num = (int)num;
+    R_Num = num - L_Num;
+    if(R_Num<0)
+        R_Num = -R_Num;
+    L_len = OLED12864_Show_Num(page,x,L_Num,size);
+    switch(size)
+    {
+        case 1: x += 6*(L_len+1); OLED12864_Show_Char(page,x,'.',size); x+=6; break;
+        case 2: x += 8*(L_len+1); OLED12864_Show_Char(page,x,'.',size); x+=8; break;
+        default:break;
+    }
+    while(d_len!=0)
+    {
+        R_Num*=10;
+        d_len--;
+    }
+    R_Num2 = (int)R_Num;
+    OLED12864_Show_Num(page,x,R_Num2,size);
+    return L_len+1+d_len;
+}
+
+uint8_t  OLED12864_Show_Num(uint8_t page,uint8_t x,int num,uint8_t size)
+{
+    uint8_t sbuf[8];
+    sprintf((char*)sbuf,"%d",num);
+    OLED12864_Show_String(page,x,sbuf,size);
+    return 0;
+}
+
+#endif
