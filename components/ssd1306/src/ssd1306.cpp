@@ -1,12 +1,18 @@
 #include "ssd1306.h"
 
-ssd1306::ssd1306(ssd1306_op_t *op_t){
-    _op_t = *op_t;
+Ssd1306::Ssd1306(Ssd1306_fun_t *fun_t){
+    _fun_t = *fun_t;
+    _isSelfBuf = false;
+    if(!_fun_t.buf){
+        _fun_t.buf = new unsigned char[1024];
+        _isSelfBuf = true;
+    }
 }
 
-ssd1306::~ssd1306(){
+Ssd1306::~Ssd1306(){
+    if(_isSelfBuf){
+        delete []_fun_t.buf;
+    }
 }
-
-
 
 //ssd1306

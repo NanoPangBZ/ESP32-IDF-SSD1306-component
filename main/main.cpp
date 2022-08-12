@@ -1,3 +1,11 @@
+#include "ssd1306.h"
+
+extern "C" void app_main(void){
+    Ssd1306(NULL);
+}
+
+
+#if 0
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -24,3 +32,4 @@ extern "C" void app_main(void)
         vTaskDelay(100/portTICK_RATE_MS);
     }
 }
+#endif
