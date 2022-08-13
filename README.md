@@ -1,16 +1,15 @@
-## 1.基于idf的ESP32 OLED12864的C++组件
+## 1.基于idf的ESP32 OLED12864的C++
 
-### 1.1 ssd1306 class
+### components/ssd1306
 
-#### 功能定义
+- /src
 
-​	抽象ssd1306芯片，使各种通讯模式的oled屏幕能统一使用ssd1306 class完成控制
+	ssd1306的控制逻辑与基本的字符与图形的显示，与具体硬件平台无关
 
-#### 对外接口
+- /hal
 
-- 由子类实现  -> 多态
-	- virtual bool periph_init()             //开启需要用到的esp外设
-	- virtual bool periph_deinit()          //关闭需要用到的esp外设
-	- virtual bool sendCmd(uint8_t *cmd,int len)
-	- virtual bool sendData(uint8_t *dat,int len)
-	- 
+	硬件抽象层 向src提供统一的操作底层硬件的接口
+
+- /service
+
+	向app层提供接口，能提供图形转化、自动刷新、多级缓存、事件回调等功能
