@@ -106,7 +106,7 @@ void Init(void*ctx){
     OLED12864_Reset_Bit(OLED_RES);
     OLED12864_delay_ms(300);
     OLED12864_Set_Bit(OLED_RES);
-    ESP_LOGW(TAG,"Init");
+    //ESP_LOGW(TAG,"Init");
 }
 
 void Deint(void*ctx){
@@ -115,11 +115,11 @@ void Deint(void*ctx){
 
 void sendCmd(uint8_t* cmd,uint8_t len,void* ctx){
     OLED12864_Send_NumByte(cmd,len,OLED_CMD);
-    ESP_LOGW(TAG,"CmdSend");
+    //ESP_LOGW(TAG,"CmdSend");
 }
 
 void sendDat(uint8_t* dat,uint16_t len,void* ctx){
     OLED12864_Send_NumByte(dat,len,OLED_DATA);
-    ESP_LOGW(TAG,"DatSend");
+    //ESP_LOGW(TAG,"DatSend");
 }
 

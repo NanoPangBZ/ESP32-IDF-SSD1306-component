@@ -1,4 +1,6 @@
 #include "ssd1306.h"
+#include "string.h"
+#include "font_lib.h"
 
 Ssd1306::Ssd1306(Ssd1306_hal_handle_t *hal_t){
     _hal_t = *hal_t;
@@ -26,6 +28,8 @@ void Ssd1306::softInit(){
     0x14,0xa4,0xa6,0xaf
     };
     _hal_t.sendCmd(initCmd,28,_hal_t.ctx);
+    memset(_hal_t.buf,0x00,1024);
+    refresh();
     //OLED12864_Send_NumByte(OLED12864_InitCmd,28,OLED_CMD);
 }
 
@@ -43,6 +47,63 @@ void Ssd1306::drawPoint(uint8_t x,uint8_t y,uint8_t bit){
         _hal_t.buf[page*128+x] |= (0x01<<offset);
     }else{
         _hal_t.buf[page*128+x] &= ~(0x01<<offset);
+    }
+}
+
+void Ssd1306::displayChar(uint8_t x,uint8_t y,char chr,uint8_t size){
+    unsigned char *offsetAddr = _hal_t.buf + ( (y/8) * 128 ) + x;
+    uint8_t pageOffset = y%8;
+    uint8_t pageUpOffset = 8 - pageOffset;
+    switch (size)
+    {
+    case 1:
+        for(uint8_t sx = 0; sx<6 ;sx++){
+            *(offsetAddr) &=  0xff << pageOffset;
+            *(offsetAddr) |=  assic_0806[chr-0x20][sx] << pageOffset;
+            offsetAddr += 128;
+            *(offsetAddr) &=  0xff >> pageUpOffset;
+            *(offsetAddr) |=  assic_0806[chr-0x20][sx] >> pageUpOffset;
+            offsetAddr -= 127;
+        }
+        break;
+    case 2:
+        for(uint8_t sx = 0; sx<8 ;sx++){
+            *(offsetAddr) &=  (0xff << pageOffset);
+            *(offsetAddr) |=  (assic_1608[chr-0x20][sx] << pageOffset);
+            offsetAddr += 128;
+            *(offsetAddr) &=  0xff ;
+            *(offsetAddr) |=  (assic_0806[chr-0x20][sx] << pageOffset) >> pageUpOffset ;
+            *(offsetAddr) |=  (assic_0806[chr-0x20][sx+8] >> pageUpOffset) << pageOffset ;
+            #if 0
+            offsetAddr += 128;
+            *(offsetAddr) &=  (0xff >> pageOffset);
+            *(offsetAddr) |=  (assic_1608[chr-0x20][sx+8] >> pageOffset);
+            #endif
+            offsetAddr -= 127;
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+void Ssd1306::displayString(uint8_t x,uint8_t y,char *str,uint8_t size){
+    uint8_t sx = x;
+    while(*str!='\0')
+    {
+        displayChar(sx,y,*str,size);
+        switch(size)
+        {
+            case 1:
+                sx+=6;
+                break;
+            case 2:
+                sx+=8;
+                break;
+            default:
+                break;
+        }
+        str++;
     }
 }
 

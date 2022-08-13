@@ -1,15 +1,14 @@
 #if 1
 #include "ssd1306.h"
+#include "freertos\FreeRTOS.h"
+#include "freertos\task.h"
 
 extern Ssd1306_hal_handle_t oled_spi4_fun_t;
 
 extern "C" void app_main(void){
     auto oled = new Ssd1306(&oled_spi4_fun_t);
-    for(uint8_t x=0;x<128;x++){
-        for(uint8_t y=0;y<64;y++){
-            oled->drawPoint(x,y,1);
-        }
-    }   
+    oled->displayString(1,1,"HelloWorld!",1);
+    oled->displayString(12,17,"11111",2);
     oled->refresh();
 }
 #endif

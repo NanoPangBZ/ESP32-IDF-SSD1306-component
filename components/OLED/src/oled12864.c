@@ -152,7 +152,7 @@ void OLED12864_Show_Char(uint8_t x,uint8_t y,uint8_t chr,uint8_t size){
             OLED12864_Sbuffer[page1][x+sx] &= (0xff<<offset);
             OLED12864_Sbuffer[page1][x+sx] |=  assic_0806[chr-0x20][sx] << offset;
             OLED12864_Sbuffer[page2][x+sx] &= (0xff>>offset);
-            OLED12864_Sbuffer[page2][x+sx] |=  assic_0806[chr-0x20][sx] >> offset;
+            OLED12864_Sbuffer[page2][x+sx] |=  assic_0806[chr-0x20][sx] >> (8-offset);
         }
         break;
     case 2:
