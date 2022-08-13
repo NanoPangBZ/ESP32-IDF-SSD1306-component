@@ -1,9 +1,18 @@
+#if 1
 #include "ssd1306.h"
 
-extern "C" void app_main(void){
-    Ssd1306(NULL);
-}
+extern Ssd1306_hal_handle_t oled_spi4_fun_t;
 
+extern "C" void app_main(void){
+    auto oled = new Ssd1306(&oled_spi4_fun_t);
+    for(uint8_t x=0;x<128;x++){
+        for(uint8_t y=0;y<64;y++){
+            oled->drawPoint(x,y,1);
+        }
+    }   
+    oled->refresh();
+}
+#endif
 
 #if 0
 #include <stdio.h>

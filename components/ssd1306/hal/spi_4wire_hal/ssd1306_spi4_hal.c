@@ -1,14 +1,46 @@
-#include "oled12864_hal.h"
+#include "ssd1306_hal.h"
+
 #include "freertos\FreeRTOS.h"
 #include "freertos\task.h"
 #include "driver\gpio.h"
 #include "driver\spi_master.h"
-#include "oled12864.h"
-#include "stdlib.h"
-#include "string.h"
-#include "esp_timer.h"
+#include "esp_log.h"
+
+#define x_MAX           128
+#define y_MAX           64
+#define page_MAX        8
+//引脚编号
+#define SSD1306_D1  25
+#define SSD1306_D0  33
+#define OLED_MOSI   SSD1306_D1
+#define OLED_SCL    SSD1306_D0
+#define OLED_CS     14
+#define OLED_RES    26
+#define OLED_DC     27
+
+#define OLED_CMD    0
+#define OLED_DATA   1
+
+#define TAG "ssd1306_spi4_hal"
+
+Ssd1306_hal_handle_t oled_spi4_fun_t = {
+    .buf = NULL,
+    .ctx = NULL,
+    .deinit = Deint,
+    .init = Init,
+    .sendCmd = sendCmd,
+    .sendDat = sendDat,
+};
 
 static spi_device_handle_t  spi_handle;     //spi操作句柄
+
+void OLED12864_Set_Bit(int pin_Num){
+    gpio_set_level((gpio_num_t)pin_Num,1);
+}
+
+void OLED12864_Reset_Bit(int pin_Num){
+    gpio_set_level((gpio_num_t)pin_Num,0);
+}
 
 void OLED12864_GPIO_Init(void)
 {
@@ -16,9 +48,6 @@ void OLED12864_GPIO_Init(void)
     gpio_set_direction((gpio_num_t)OLED_RES,GPIO_MODE_OUTPUT);
     OLED12864_Reset_Bit(OLED_DC);
     OLED12864_Set_Bit(OLED_RES);
-}
-
-void IRAM_ATTR OLED12864_SPI_Finnish_CallBack(spi_transaction_t *para){
 }
 
 void IRAM_ATTR OLED12864_SPI_Start_CallBack(spi_transaction_t *para){
@@ -29,7 +58,7 @@ void IRAM_ATTR OLED12864_SPI_Start_CallBack(spi_transaction_t *para){
     }
 }
 
-void OLED12864_SPI_Init(void) //内部函数
+void OLED12864_SPI_Init(void)
 {
     spi_bus_config_t buscfg={
         .miso_io_num = -1,
@@ -52,19 +81,12 @@ void OLED12864_SPI_Init(void) //内部函数
 
 }
 
-void OLED12864_Set_Bit(int pin_Num){
-    gpio_set_level((gpio_num_t)pin_Num,1);
-}
-
-void OLED12864_Reset_Bit(int pin_Num){
-    gpio_set_level((gpio_num_t)pin_Num,0);
-}
-
 void OLED12864_Send_NumByte(const uint8_t*dat,uint16_t len,uint8_t cmd)
 {
     static spi_transaction_t tran;
     tran.tx_buffer = dat;
     tran.length = len*8;
+    //tran.rxlength = tran.length;
     tran.flags = SPI_TRANS_MODE_OCT;
     if(cmd==OLED_CMD){
         tran.user = (void*)OLED_CMD;
@@ -78,18 +100,26 @@ void OLED12864_delay_ms(uint16_t ms){
     vTaskDelay(ms/portTICK_PERIOD_MS);
 }
 
-static esp_timer_handle_t timer;
-static esp_timer_create_args_t para;
-
-void OLED12864_Auto_Callback(void*args){
-    OLED12864_Refresh();
+void Init(void*ctx){
+    OLED12864_GPIO_Init();
+    OLED12864_SPI_Init();
+    OLED12864_Reset_Bit(OLED_RES);
+    OLED12864_delay_ms(300);
+    OLED12864_Set_Bit(OLED_RES);
+    ESP_LOGW(TAG,"Init");
 }
 
-void OLED12864_Auto_Refresh_Set(int hz,uint8_t *buf){
-    para.arg = (void*)buf;
-    para.callback = OLED12864_Auto_Callback;
-    para.dispatch_method = ESP_TIMER_TASK;
-    esp_timer_init();
-    esp_timer_create(&para,&timer);
-    esp_timer_start_periodic(timer, (int)1000000/hz);
+void Deint(void*ctx){
+
 }
+
+void sendCmd(uint8_t* cmd,uint8_t len,void* ctx){
+    OLED12864_Send_NumByte(cmd,len,OLED_CMD);
+    ESP_LOGW(TAG,"CmdSend");
+}
+
+void sendDat(uint8_t* dat,uint16_t len,void* ctx){
+    OLED12864_Send_NumByte(dat,len,OLED_DATA);
+    ESP_LOGW(TAG,"DatSend");
+}
+

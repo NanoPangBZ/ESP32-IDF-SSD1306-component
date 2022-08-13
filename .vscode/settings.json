@@ -14,6 +14,8 @@
     "*.ipp": "c",
     "*.inc": "c",
     "esp_timer.h": "c",
-    "ssd1306.h": "c"
+    "ssd1306.h": "c",
+    "esp_intr_alloc.h": "c",
+    "regex": "c"
   }
 }
