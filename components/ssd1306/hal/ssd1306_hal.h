@@ -16,6 +16,8 @@ typedef struct{
     unsigned char *buf;
 }Ssd1306_hal_handle_t;
 
+extern Ssd1306_hal_handle_t oled_spi4_fun_t;
+
 void Init(void*);
 void Deint(void*);
 void sendCmd(uint8_t*cmd,uint8_t len,void*);

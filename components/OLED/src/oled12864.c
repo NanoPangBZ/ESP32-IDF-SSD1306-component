@@ -141,33 +141,33 @@ void OLED12864_Draw_Rect(uint8_t x,uint8_t y,uint8_t len,uint8_t hight)
 }
 
 void OLED12864_Show_Char(uint8_t x,uint8_t y,uint8_t chr,uint8_t size){
-    uint8_t page1,page2,page3,offset;
+    unsigned char *offsetAddr = OLED12864_Sbuffer[0] + ( (y/8) * 128 ) + x;
+    uint8_t pageOffset = y%8;
+    uint8_t pageUpOffset = 8 - pageOffset;
     switch (size)
     {
     case 1:
-        page1 = y/8;
-        page2 = page1+1;
-        offset = y%8;
-        for(uint8_t sx=0;sx<6;sx++){
-            OLED12864_Sbuffer[page1][x+sx] &= (0xff<<offset);
-            OLED12864_Sbuffer[page1][x+sx] |=  assic_0806[chr-0x20][sx] << offset;
-            OLED12864_Sbuffer[page2][x+sx] &= (0xff>>offset);
-            OLED12864_Sbuffer[page2][x+sx] |=  assic_0806[chr-0x20][sx] >> (8-offset);
+        for(uint8_t sx = 0; sx<6 ;sx++){
+            *(offsetAddr) &=  ~(0xff << pageOffset);
+            *(offsetAddr) |=  assic_0806[chr-0x20][sx] << pageOffset;
+            offsetAddr += 128;
+            *(offsetAddr) &=  ~(0xff >> pageUpOffset);
+            *(offsetAddr) |=  assic_0806[chr-0x20][sx] >> pageUpOffset;
+            offsetAddr -= 127;
         }
         break;
     case 2:
-        page1 = y/8;
-        page2 = page1+1;
-        page3 = page2+1;
-        offset = page1%8;
-        for(uint8_t sx=0;sx<8;sx++){
-            OLED12864_Sbuffer[page1][x+sx] &= (0xff<<offset);
-            OLED12864_Sbuffer[page1][x+sx] |=  assic_1608[chr-0x20][sx] << offset;
-            OLED12864_Sbuffer[page2][x+sx] &= 0xff;
-            OLED12864_Sbuffer[page2][x+sx] |=  assic_1608[chr-0x20][sx] >> offset;
-            OLED12864_Sbuffer[page2][x+sx] |=  assic_1608[chr-0x20][sx+8] << offset;
-            OLED12864_Sbuffer[page3][x+sx] &= (0xff>>offset);
-            OLED12864_Sbuffer[page3][x+sx] |=  assic_1608[chr-0x20][sx+8] >> offset;
+        for(uint8_t sx = 0; sx<8 ;sx++){
+            *(offsetAddr) &=  ~(0xff << pageOffset);
+            *(offsetAddr) |=  (assic_1608[chr-0x20][sx] << pageOffset);
+            offsetAddr += 128;
+            *(offsetAddr) &=  ~0xff ;
+            *(offsetAddr) |=  assic_1608[chr-0x20][sx] >> pageUpOffset;
+            *(offsetAddr) |=  assic_1608[chr-0x20][sx+8] << pageOffset;
+            offsetAddr += 128;
+            *(offsetAddr) &=  ~(0xff >> pageUpOffset);
+            *(offsetAddr) |=  (assic_1608[chr-0x20][sx+8] >> pageUpOffset);
+            offsetAddr -= 255;
         }
         break;
     default:

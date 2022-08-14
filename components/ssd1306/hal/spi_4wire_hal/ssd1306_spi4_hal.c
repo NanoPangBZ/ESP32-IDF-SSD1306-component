@@ -86,7 +86,6 @@ void OLED12864_Send_NumByte(const uint8_t*dat,uint16_t len,uint8_t cmd)
     static spi_transaction_t tran;
     tran.tx_buffer = dat;
     tran.length = len*8;
-    //tran.rxlength = tran.length;
     tran.flags = SPI_TRANS_MODE_OCT;
     if(cmd==OLED_CMD){
         tran.user = (void*)OLED_CMD;

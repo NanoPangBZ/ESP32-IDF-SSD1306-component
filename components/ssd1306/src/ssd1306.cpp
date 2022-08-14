@@ -38,6 +38,15 @@ void Ssd1306::refresh(){
     _hal_t.sendDat(_hal_t.buf,1024,_hal_t.ctx);
 }
 
+void Ssd1306::clear(){
+    memset(_hal_t.buf,0x00,1024);
+}
+
+void Ssd1306::clearPage(uint8_t page,uint8_t x,uint8_t len){
+    uint8_t *offsetAddr = _hal_t.buf + page *128 + x;
+    memset(offsetAddr,0x00,len);
+}
+
 void Ssd1306::drawPoint(uint8_t x,uint8_t y,uint8_t bit){
     if( y > 63 || x > 127)
         return;
@@ -50,6 +59,25 @@ void Ssd1306::drawPoint(uint8_t x,uint8_t y,uint8_t bit){
     }
 }
 
+void Ssd1306::drawLine(uint8_t x1,uint8_t y1,uint8_t x2,uint8_t y2){
+    float sx,sy;
+    float k,k_1;   //斜率
+    k = ((float)y2-y1) / ((float)x2-x1);
+    k_1 = 1/k;
+    sx = x1;
+    sy = y1;
+    for(;x1<=x2;x1++)
+    {
+        sy += k;
+        drawPoint(x1,(int)sy,1);
+    }
+    for(;y1<=y2;y1++)
+    {
+        sx += k_1;
+        drawPoint((int)sx,y1,1);
+    }
+}
+
 void Ssd1306::displayChar(uint8_t x,uint8_t y,char chr,uint8_t size){
     unsigned char *offsetAddr = _hal_t.buf + ( (y/8) * 128 ) + x;
     uint8_t pageOffset = y%8;
@@ -58,28 +86,26 @@ void Ssd1306::displayChar(uint8_t x,uint8_t y,char chr,uint8_t size){
     {
     case 1:
         for(uint8_t sx = 0; sx<6 ;sx++){
-            *(offsetAddr) &=  0xff << pageOffset;
+            *(offsetAddr) &=  ~(0xff << pageOffset);
             *(offsetAddr) |=  assic_0806[chr-0x20][sx] << pageOffset;
             offsetAddr += 128;
-            *(offsetAddr) &=  0xff >> pageUpOffset;
+            *(offsetAddr) &=  ~(0xff >> pageUpOffset);
             *(offsetAddr) |=  assic_0806[chr-0x20][sx] >> pageUpOffset;
             offsetAddr -= 127;
         }
         break;
     case 2:
         for(uint8_t sx = 0; sx<8 ;sx++){
-            *(offsetAddr) &=  (0xff << pageOffset);
+            *(offsetAddr) &=  ~(0xff << pageOffset);
             *(offsetAddr) |=  (assic_1608[chr-0x20][sx] << pageOffset);
             offsetAddr += 128;
-            *(offsetAddr) &=  0xff ;
-            *(offsetAddr) |=  (assic_0806[chr-0x20][sx] << pageOffset) >> pageUpOffset ;
-            *(offsetAddr) |=  (assic_0806[chr-0x20][sx+8] >> pageUpOffset) << pageOffset ;
-            #if 0
+            *(offsetAddr) &=  ~0xff ;
+            *(offsetAddr) |=  assic_1608[chr-0x20][sx] >> pageUpOffset;
+            *(offsetAddr) |=  assic_1608[chr-0x20][sx+8] << pageOffset;
             offsetAddr += 128;
-            *(offsetAddr) &=  (0xff >> pageOffset);
-            *(offsetAddr) |=  (assic_1608[chr-0x20][sx+8] >> pageOffset);
-            #endif
-            offsetAddr -= 127;
+            *(offsetAddr) &=  ~(0xff >> pageUpOffset);
+            *(offsetAddr) |=  (assic_1608[chr-0x20][sx+8] >> pageUpOffset);
+            offsetAddr -= 255;
         }
         break;
     default:

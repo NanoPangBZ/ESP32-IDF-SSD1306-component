@@ -1,16 +1,47 @@
 #if 1
-#include "ssd1306.h"
+#include "oled.h"
 #include "freertos\FreeRTOS.h"
 #include "freertos\task.h"
 
 extern Ssd1306_hal_handle_t oled_spi4_fun_t;
 
 extern "C" void app_main(void){
-    auto oled = new Ssd1306(&oled_spi4_fun_t);
-    oled->displayString(1,1,"HelloWorld!",1);
-    oled->displayString(12,17,"11111",2);
-    oled->refresh();
+    auto oled = Oled::getInstance();
+    oled->autoRefresh(200);
+    oled->displayString(0,0,"HelloWorld!",1);
+    while(1){
+        uint8_t x1,y1,x2,y2;
+        x1 = x2 = y1 = y2 = 0;
+        for(uint16_t t=0;t<384;t++){
+            oled->clear();
+            oled->drawLine(x1,y1,x2,y2);
+            if(t<64){
+                x1 = t;
+                y1 = 0;
+                x2 = t+64;
+                y2 = 0;
+            }else if(t<128){
+                x1 = t;
+                y1 = 0;
+                x2 = 128;
+                y2 = t - 64;
+            }else if(t<192){
+                x1 = 127;
+                y1 = t - 128;
+                x2 = 256 - t;
+                y2 = 63;
+            }else if(t<320){
+                x2 = 128 - (t - 192);
+                y1 = 127;
+                x1 = x1 - 63;
+                y2 = 127;
+            }
+            vTaskDelay(20/portTICK_RATE_MS);
+        }
+    }
+
 }
+
 #endif
 
 #if 0
