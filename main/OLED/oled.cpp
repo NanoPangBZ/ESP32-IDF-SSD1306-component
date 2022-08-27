@@ -4,7 +4,7 @@ Oled* Oled::_oled = NULL;
 
 Oled* Oled::getInstance(){
     if(!_oled){
-        _oled = new Oled(&oled_spi4_fun_t);
+        _oled = new Oled(&oled_spi4_handle);
     }
     return _oled;
 }

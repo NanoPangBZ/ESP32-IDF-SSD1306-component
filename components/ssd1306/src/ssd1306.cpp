@@ -1,6 +1,9 @@
 #include "ssd1306.h"
 #include "string.h"
 #include "font_lib.h"
+#include "esp_log.h"
+
+#define TAG "ssd1306"
 
 Ssd1306::Ssd1306(Ssd1306_hal_handle_t *hal_t){
     _hal_t = *hal_t;
@@ -47,12 +50,12 @@ void Ssd1306::clearPage(uint8_t page,uint8_t x,uint8_t len){
     memset(offsetAddr,0x00,len);
 }
 
-void Ssd1306::drawPoint(uint8_t x,uint8_t y,uint8_t bit){
+void Ssd1306::drawPoint(uint8_t x,uint8_t y,uint8_t pix){
     if( y > 63 || x > 127)
         return;
     uint8_t page = y/8;
     uint8_t offset = y%8;
-    if(bit){
+    if(pix){
         _hal_t.buf[page*128+x] |= (0x01<<offset);
     }else{
         _hal_t.buf[page*128+x] &= ~(0x01<<offset);
@@ -60,24 +63,38 @@ void Ssd1306::drawPoint(uint8_t x,uint8_t y,uint8_t bit){
 }
 
 void Ssd1306::drawLine(uint8_t x1,uint8_t y1,uint8_t x2,uint8_t y2){
-    float sx,sy;
-    float k,k_1;   //斜率
-    k = ((float)y2-y1) / ((float)x2-x1);
-    k_1 = 1/k;
+    float k = (float)(y1 - y2) / (float)(x1 -x2);   //斜率
+    float k_1 = 1 / k;
+
+    float sx = x1;
+    float sy = y1;
+    while( sx != x2){
+        drawPoint((int)sx,(int)sy,1);
+        if( sx < x2 ){
+            sx ++;
+            sy += k;
+        }else{
+            sx --;
+            sy -= k;
+        }
+    }
+
     sx = x1;
     sy = y1;
-    for(;x1<=x2;x1++)
-    {
-        sy += k;
-        drawPoint(x1,(int)sy,1);
-    }
-    for(;y1<=y2;y1++)
-    {
-        sx += k_1;
-        drawPoint((int)sx,y1,1);
+    while( sy != y2 ){
+        drawPoint((int)sx,(int)sy,1);
+        if( sy < y2 ){
+            sy ++;
+            sx += k_1;
+        }else{
+            sy --;
+            sx -= k_1;
+        }
     }
 }
 
+
+//仅支持ASSIC字符
 void Ssd1306::displayChar(uint8_t x,uint8_t y,char chr,uint8_t size){
     unsigned char *offsetAddr = _hal_t.buf + ( (y/8) * 128 ) + x;
     uint8_t pageOffset = y%8;

@@ -23,7 +23,7 @@
 
 #define TAG "ssd1306_spi4_hal"
 
-Ssd1306_hal_handle_t oled_spi4_fun_t = {
+Ssd1306_hal_handle_t oled_spi4_handle = {
     .buf = NULL,
     .ctx = NULL,
     .deinit = Deint,
