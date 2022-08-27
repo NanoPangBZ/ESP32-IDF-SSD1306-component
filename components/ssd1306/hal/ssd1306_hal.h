@@ -18,11 +18,6 @@ typedef struct{
 
 extern Ssd1306_hal_handle_t oled_spi4_handle;
 
-void Init(void*);
-void Deint(void*);
-void sendCmd(uint8_t*cmd,uint8_t len,void*);
-void sendDat(uint8_t*dat,uint16_t len,void*);
-
 #ifdef __cplusplus
 }
 #endif

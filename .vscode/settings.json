@@ -17,6 +17,7 @@
     "ssd1306.h": "c",
     "esp_intr_alloc.h": "c",
     "regex": "c",
-    "esp_err.h": "c"
+    "esp_err.h": "c",
+    "lv_conf_kconfig.h": "c"
   }
 }

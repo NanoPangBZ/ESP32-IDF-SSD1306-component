@@ -23,6 +23,12 @@
 
 #define TAG "ssd1306_spi4_hal"
 
+//函数声明
+void Init(void*);
+void Deint(void*);
+void sendCmd(uint8_t*cmd,uint8_t len,void*);
+void sendDat(uint8_t*dat,uint16_t len,void*);
+
 Ssd1306_hal_handle_t oled_spi4_handle = {
     .buf = NULL,
     .ctx = NULL,
@@ -96,7 +102,7 @@ void OLED12864_Send_NumByte(const uint8_t*dat,uint16_t len,uint8_t cmd)
 }
 
 void OLED12864_delay_ms(uint16_t ms){
-    vTaskDelay(ms/portTICK_PERIOD_MS);
+    vTaskDelay( 20 );
 }
 
 void Init(void*ctx){
