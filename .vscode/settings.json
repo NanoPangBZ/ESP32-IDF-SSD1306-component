@@ -18,6 +18,13 @@
     "esp_intr_alloc.h": "c",
     "regex": "c",
     "esp_err.h": "c",
-    "lv_conf_kconfig.h": "c"
+    "lv_conf_kconfig.h": "c",
+    "lvgl.h": "c",
+    "lv_conf.h": "c",
+    "lv_conf_internal.h": "c",
+    "lv_hal.h": "c",
+    "lv_hal_disp.h": "c",
+    "lv_api_map.h": "c",
+    "lv_obj.h": "c"
   }
 }
