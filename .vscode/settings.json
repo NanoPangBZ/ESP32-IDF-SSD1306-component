@@ -25,6 +25,8 @@
     "lv_hal.h": "c",
     "lv_hal_disp.h": "c",
     "lv_api_map.h": "c",
-    "lv_obj.h": "c"
+    "lv_obj.h": "c",
+    "lv_demo_widgets.h": "c",
+    "lv_demos.h": "c"
   }
 }
